@@ -1,0 +1,1 @@
+web: spotolka --bind=:$VCAP_APP_PORT

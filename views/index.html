@@ -1,0 +1,23 @@
+{{define "index"}}
+  {{template "header" .}}
+
+    <div class="row">
+      <div class="col-lg-5 col-centered">
+      <br>
+      {{if .Error}}
+      <div class="alert alert-danger" role="alert">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        <span class="sr-only">Error:</span>
+        {{ .Error}}
+      </div>
+      {{end}} 
+        <br>
+        <br>
+        <div class="row"><a type="button" class="btn btn-success" style="width:100%; font-size:20pt" href="/team">Create a team</a></div>
+        <br>
+        <div class="row"><a type="button" class="btn btn-info" style="width:100%;  font-size:20pt" href="/solo">Start on your own</a></div>
+      </div>
+    </div>
+
+  {{template "footer" .}}
+{{end}}

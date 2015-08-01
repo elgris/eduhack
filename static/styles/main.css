@@ -1,0 +1,18 @@
+body { 
+    padding-top: 65px; 
+}
+
+.number-line-container, .number-line-container li {
+  list-style-type: none;
+}
+
+.number-line {
+  display: inline;
+  font-size: 32pt;
+  cursor: pointer;
+}
+
+.col-centered {
+  margin: 0 auto; 
+  float: none;
+}

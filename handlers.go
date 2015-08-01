@@ -16,6 +16,10 @@ type ErrTemplateData struct {
 	Error string
 }
 
+type GameTemplateData struct {
+	TeamID string
+}
+
 type TeamData struct {
 }
 
@@ -25,7 +29,6 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 func Team(c web.C, w http.ResponseWriter, r *http.Request) {
 	teamId, ok := c.URLParams["team_id"]
-	println(teamId)
 	if !ok {
 		newTeam(w, r)
 		return
@@ -39,10 +42,10 @@ func Team(c web.C, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := ErrTemplateData{
-		Error: "Everything's ok, carry on",
+	data := GameTemplateData{
+		TeamID: teamId,
 	}
-	io.WriteString(w, parseTemplate(tmplt, "index", &data))
+	io.WriteString(w, parseTemplate(tmplt, "game", &data))
 }
 
 func getTeam(teamId string) (team TeamData, ok bool) {
@@ -51,7 +54,6 @@ func getTeam(teamId string) (team TeamData, ok bool) {
 
 func newTeam(w http.ResponseWriter, r *http.Request) {
 	key := generateKey()
-	println(key)
 	storage.Set(key, "true", cache.DefaultExpiration)
 	http.Redirect(w, r, "/team/"+key, 302)
 }

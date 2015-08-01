@@ -1,0 +1,57 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Chat ✍</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="/static/lib/bootstrap/css/bootstrap.css" />
+    <link rel="stylesheet" href="/static/styles/main.css">
+    <link rel="stylesheet" href="/static/styles/bubbles.css">
+    <script type="text/javascript" src="//cdn.socket.io/socket.io-1.1.0.js" integrity="ni:///sha-256;4omls-f3OZnoi9yQzyNT9_vPSo8hb-oTnjdwgyUcJV8=?ct=application/javascript"></script>
+  </head>
+  <body ng-app="app">
+    <!--[if lt IE 7]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Numbers finder</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Numbers game -->
+    <div class="container row"  ng-controller="NumbersController">
+        <div class="col-lg-5 col-centered">
+            <ul>
+                <li ng-repeat="line in numberLines" class="number-line-container">
+                    <ul>
+                        <li class="number-line" ng-repeat="number in line">
+                        <span style="color:<<number.color>>" ng-click="numberClicked(number.val)"><<number.val>></span>
+                        </li>
+                    <ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- build:js scripts/vendor.js -->
+    <!-- bower:js -->
+    <script src="/static/lib/angular/angular.js"></script>
+    <script src="/static/lib/angular-socket-io/socket.js"></script>
+    <!-- endbower -->
+    <!-- endbuild -->
+        <!-- build:js({.tmp,app}) scripts/scripts.js -->
+        <script src="/static/scripts/app.js"></script>
+        <script src="/static/scripts/controllers/chat.js"></script>
+        <script src="/static/scripts/services/socket.js"></script>
+        <!-- endbuild -->
+</body>
+</html>

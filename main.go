@@ -51,10 +51,10 @@ func tryToJoin(m *sync.Mutex, teamId string) (int, error) {
 			players = p
 		}
 		if players >= 2 {
-			return players, errors.New("error: team is full, try onother one")
+			return players, errors.New("team is full, try another one")
 		}
 	} else {
-		return 0, errors.New("error: team is inactive, please create new one")
+		return 0, errors.New("team is inactive, please create new one")
 	}
 	players++
 	storage.Set(teamId, players, cache.DefaultExpiration)

@@ -16,3 +16,13 @@ body {
   margin: 0 auto; 
   float: none;
 }
+
+.player-1 {
+	color: #cc0000;
+	text-align: center;
+}
+
+.player-2 {
+	color: #0000cc;
+	text-align: center;
+}

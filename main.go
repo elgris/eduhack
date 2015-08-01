@@ -88,7 +88,8 @@ func initSocketIO() {
 		so.Emit("connected", strconv.Itoa(playerNum))
 
 		if playerNum == 2 {
-			// todo: start game
+			so.Emit("start", parseTemplate(tmplt, "game_0", nil))
+
 			so.On("finish", func(message string) {
 				log.Println("signalled message", message)
 			})

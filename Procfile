@@ -1,1 +1,1 @@
-web: ./spotolka -bind=:$VCAP_APP_PORT
+web: spotolka -bind=:$VCAP_APP_PORT

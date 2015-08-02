@@ -61,3 +61,11 @@ body {
   font-size: 30pt;
   text-align: center;
 }
+
+.btn-circle {
+  text-align: center;
+  padding: 6px 0;
+  font-size: 12px;
+  line-height: 1.42;
+  border-radius: 35px;
+}

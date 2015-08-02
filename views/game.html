@@ -5,7 +5,7 @@
     <div id = "message" class="row">
       <div class="col-lg-6 col-centered">
         <div class="alert alert-info" role="alert">
-          Team was created successfully! Use this link to invite your friends: <a href="http://teamneuron.mybluemix.net/team/<< .TeamID>>">http://teamneuron.mybluemix.net/team/<< .TeamID>></a>
+          Team was created successfully! Use this link to invite your friends: <a href="http://teamneuron.mybluemix.net/team/<< .TeamID>>" target="_blank">http://teamneuron.mybluemix.net/team/<< .TeamID>></a>
         </div>
       </div>
     </div>
@@ -37,8 +37,7 @@
 
     <div class="row">
       <div class="col-lg-6 col-centered">
-        <div id="score" class="alert alert-info score" role="alert">
-        </div>
+        <div id="score" class="alert alert-info score" role="alert">0</div>
       </div>
     </div>
 
@@ -67,7 +66,7 @@ var $score = $('#score');
 
 var countdown = $("#countdown").countdown360({
     radius: 60,
-    seconds: 10,
+    seconds: 20,
     label: ['sec', 'secs'],
     fontColor: '#FFFFFF',
     autostart: true,
@@ -125,6 +124,24 @@ $("#game-field").ready(function() {
         
         eval(json.message)
       });  
+      socket.on('finish', function (data) {
+        console.log('event: ' + data);
+
+        $("#dialog-over").html('<p class="score"> Together you got ' + $score.html() + ' points </p>');
+
+        $("#dialog-over").dialog({
+            resizable: false,
+            modal: true,
+            title: "The test is over",
+            height: 250,
+            width: 500,
+            buttons: {
+                "Try again": function () {
+                    window.location="/team"
+                }
+            }
+        });
+      });  
 
       socket.on('error', function (data) {
         console.log('error: ' + data);
@@ -148,6 +165,7 @@ $("#game-field").ready(function() {
 </script>
 
 <div id="dialog-confirm"></div>
+<div id="dialog-over"></div>
 
   <<template "footer" .>>
 <<end>>

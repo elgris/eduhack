@@ -24,12 +24,14 @@
         <tr>
           <td style="width:25%">
             <div id="player-1" class="player-1">Player 1</div>
+            <div id="player-1-score" class="player-1">0</div>
           </td>
           <td style="width:50%">
             <div id="game-field">Please wait for second player</div>
           </td>
           <td style="width:25%">
           <div id="player-2" class="player-2"/>Player 2</div>
+          <div id="player-2-score" class="player-2">0</div>
           </td>
         </tr>
       </table>
@@ -52,16 +54,25 @@
 <script src="/static/scripts/games.js"></script>
 
 <script type="text/javascript">
+var playerIndex = 0;
+var opponentIndex = 0;
+var playerValue = 0;
+var $playField = $('#game-field');
+var $player1 = $('#player-1');
+var $player2 = $('#player-2');
+var $player1score = $('#player-1-score');
+var $player2score = $('#player-2-score');
+
+var socket;
+
 $("#game-field").ready(function() {
       var lid = window.location.pathname.lastIndexOf("/")
       var teamId = window.location.pathname.substring(lid+1)
-
-      var socket = io.connect(window.location.host + "?team_id="+teamId);
-      var playerIndex = 0;
-      var $playField = $('#game-field');
+      socket = io.connect(window.location.host + "?team_id="+teamId);
 
       socket.on('connected', function (data) {
         playerIndex = parseInt(data);
+        opponentIndex = (playerIndex % 2) + 1;
 
         console.log('connected: ' + playerIndex);
         $elem = $("#player-" + playerIndex);
@@ -69,10 +80,30 @@ $("#game-field").ready(function() {
       });  
 
       socket.on('start', function (data) {
+        data = atob(data)
         console.log('start: ' + data);
         $('#message').hide();
 
-        $playField.html(data);
+        var json = JSON.parse(data);
+
+        $playField.html(json.content);
+        $player1.html(json.first);
+        $player2.html(json.second);
+
+        $elem = $("#player-" + playerIndex)
+        $elem.html("Task: " + $elem.html());
+        
+        $("#player-" + opponentIndex).html('');
+      });  
+
+      socket.on('event', function (data) {
+        console.log('event: ' + data);
+
+        var json = JSON.parse(data);
+
+        $player1score.html(json.score_player_1);
+        $player2score.html(json.score_player_2);
+        eval(json.message)
       });  
 
       socket.on('error', function (data) {

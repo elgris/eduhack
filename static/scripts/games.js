@@ -7,8 +7,14 @@ var colors = [
 ];
 var numbers = [6,8,9];
 
-function game0() {
-	var lines = game0generator(8, 25);
+function game0(main, first, second) {
+	if (playerIndex == 1) {
+		playerValue = first;
+	} else {
+		playerValue = second;
+	}
+
+	var lines = game0generator(8, 25, main, first, second);
 	var list = $('<ul>').addClass('game0');
 
 	$.each(lines, function(i) {
@@ -21,33 +27,66 @@ function game0() {
 	    numbers = lines[i]
 	    $.each(numbers, function(j) {
 	    	var num = numbers[j];
-	    	var elem = $('<li/>')
-	    		.attr('style', 'cursor: pointer; display: inline; color: ' + num.color)
+	    	$('<li onclick="numClicked(' + i + ',' + j + ')"/>')	    		
+    			.attr('style', 'cursor: pointer; display: inline; color: ' + num.color)
 	    		.addClass('no-list')
 	    		.text(num.val)
 	    		.appendTo(subList);
 	    });
 	});
-
-console.log(lines);
-console.log(list);
-console.log(list[0].outerHTML);
-
 	return list[0].outerHTML;
 }
 
-function game0generator(linesNum, lineLen) {
-	var mainNum = getRandomFromArray(numbers);
+function numClicked (line, col) {
+	hideNum(line, col)
+	var $elem = $('ul.game0 li:nth-child(' + (line+1) + ') ul li:nth-child(' + (col+1) + ')');
+
+	var val = parseInt($elem.html());
+	score(val == playerValue);
+	notify('hideNum(' + line + ',' + col + ')');
+}
+
+function hideNum (line, col) {
+	var $elem = $('ul.game0 li:nth-child(' + (line+1) + ') ul li:nth-child(' + (col+1) + ')')
+	var style = 'visibility: hidden;' + $elem.attr('style');
+	$elem.attr('style', style);
+}
+
+function score (success) {
+	$elem = $('#player-' + playerIndex + '-score');
+	var val = parseInt($elem.html())
+	if (success) {
+		$elem.html(val + 1);
+	} else {
+		$elem.html(val - 1);
+	}
+}
+
+function notify (str) {
+	var ev = {
+		'score_player_1': $player1score.html(),
+		'score_player_2': $player2score.html(),
+		'message': str
+	};
+
+	socket.emit('event', JSON.stringify(ev));
+}
+
+function game0generator(linesNum, lineLen, main, first, second) {
 	var mainColor = getRandomFromArray(colors);
 
 	var lines = [];
 	for (var i = 0; i < linesNum; i++) {
 		var line = [];
 		for (var j = 0; j < lineLen; j++) {
-			var val = mainNum
-			if (Math.random() < 2 / lineLen) {
-				val = getRandomFromArray(numbers);
+			var val = main
+			var rnd = Math.random()
+			if (rnd < 2 / lineLen) {
+				val = first;
+			} else if (rnd < 4 / lineLen) {
+				val = second;
 			}
+
 			var number = {
 				val: val,
 				color: mainColor

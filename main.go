@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"html/template"
 	"log"
@@ -19,6 +20,12 @@ import (
 	"github.com/zenazn/goji"
 	gojiweb "github.com/zenazn/goji/web"
 )
+
+type Message struct {
+	First   string `json:"first"`
+	Second  string `json:"second"`
+	Content string `json:"content"`
+}
 
 var tmplt *template.Template
 var storage *cache.Cache
@@ -83,20 +90,27 @@ func initSocketIO() {
 		}
 
 		log.Printf("team %s, player N %d", teamId, playerNum)
-		so.Join("/" + teamId)
+		so.Join(teamId)
 
 		so.Emit("connected", strconv.Itoa(playerNum))
 
 		if playerNum == 2 {
-			so.Emit("start", parseTemplate(tmplt, "game_0", nil))
-
-			so.On("finish", func(message string) {
-				log.Println("signalled message", message)
-			})
+			mess := encodeMessage(game0())
+			so.Emit("start", mess)
+			so.BroadcastTo(teamId, "start", mess)
 		}
 
+		so.On("event", func(message string) {
+			println(message)
+			so.BroadcastTo(teamId, "event", message)
+		})
+
+		so.On("finish", func(message string) {
+			log.Println("signalled message", message)
+		})
+
 		so.On("disconnection", func() {
-			so.Leave("/" + teamId)
+			so.Leave(teamId)
 			storage.Decrement(teamId, 1)
 			log.Printf("player %d left team %s", playerNum, teamId)
 		})
@@ -107,6 +121,34 @@ func initSocketIO() {
 
 	// Sets up the handlers and listen on port 8080
 	http.Handle("/socket.io/", sio)
+}
+
+func encodeMessage(m Message) []byte {
+	str, _ := json.Marshal(m)
+	return str
+}
+
+func game0() Message {
+
+	data := struct {
+		First  int
+		Second int
+		Main   int
+	}{}
+
+	nums := []int{6, 8, 9}
+	shuffleInt(nums)
+	data.First = nums[0]
+	data.Second = nums[1]
+	data.Main = nums[2]
+
+	content := parseTemplate(tmplt, "game_0", &data)
+	return Message{
+		First:   "choose only numbers " + strconv.Itoa(data.First),
+		Second:  "choose only numbers " + strconv.Itoa(data.Second),
+		Content: content,
+	}
+
 }
 
 func loadTemplates() {

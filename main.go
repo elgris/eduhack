@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"html/template"
 	"log"
 	"math/rand"
@@ -149,8 +150,8 @@ func nextGame(teamId string, so socketio.Socket) {
 	switch next {
 	case 0:
 		m = game0()
-	// case 1:
-	// 	m = game1()
+	case 1:
+		m = game1()
 	default:
 		so.Emit("finish")
 		so.BroadcastTo(teamId, "finish")
@@ -165,6 +166,73 @@ func nextGame(teamId string, so socketio.Socket) {
 func encodeMessage(m Message) []byte {
 	str, _ := json.Marshal(m)
 	return str
+}
+
+type colorDef struct {
+	Base   string
+	First  string
+	Second string
+}
+
+var colordefs []colorDef = []colorDef{
+	{"#3498db", "#48a6ea", "#2890d2"},
+	{"#f22613", "#ff4628", "#e30c07"},
+}
+
+func game1() Message {
+
+	data := struct {
+		BaseColor   string
+		FirstColor  string
+		SecondColor string
+		Data        string
+	}{}
+
+	colorIndex := rand.Intn(len(colordefs))
+	colordef := colordefs[colorIndex]
+	firstMessage := "light"
+	secondMessage := "dark"
+	if rand.Intn(10) < 5 {
+		firstMessage = "dark"
+		secondMessage = "light"
+		data.FirstColor = colordef.Second
+		data.SecondColor = colordef.First
+		data.BaseColor = colordef.Base
+	} else {
+		data.FirstColor = colordef.First
+		data.SecondColor = colordef.Second
+		data.BaseColor = colordef.Base
+	}
+
+	field := generateGame1Field(data.BaseColor, data.FirstColor, data.SecondColor)
+	str, _ := json.Marshal(field)
+	data.Data = string(str)
+
+	content := parseTemplate(tmplt, "game_1", &data)
+	return Message{
+		First:   fmt.Sprintf("pick circles of %s shade", firstMessage),
+		Second:  fmt.Sprintf("pick circles of %s shade", secondMessage),
+		Content: content,
+	}
+}
+
+func generateGame1Field(main, first, second string) [][]string {
+	res := make([][]string, 6)
+	for i := 0; i < 6; i++ {
+		res[i] = make([]string, 7)
+		for j := 0; j < 7; j++ {
+			rnd := rand.Intn(100)
+			if rnd < 20 {
+				res[i][j] = first
+			} else if rnd < 40 {
+				res[i][j] = second
+			} else {
+				res[i][j] = main
+			}
+		}
+	}
+
+	return res
 }
 
 func game0() Message {

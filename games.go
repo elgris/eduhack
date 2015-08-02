@@ -17,3 +17,10 @@ func shuffleInt(a []int) {
 		a[i], a[j] = a[j], a[i]
 	}
 }
+
+func shuffleString(a []string) {
+	for i := range a {
+		j := rand.Intn(i + 1)
+		a[i], a[j] = a[j], a[i]
+	}
+}

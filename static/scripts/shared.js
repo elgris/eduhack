@@ -1,3 +1,5 @@
+var inProgress = false;
+
 function score (success, value) {
 	value = value || 1;
 	$elem = $('#player-' + playerIndex + '-score');
@@ -21,6 +23,9 @@ function getRandomFromArray(arr) {
 }
 
 function finish (message, success) {
+	if (!inProgress) {
+		return
+	}
     $("#dialog-confirm").html(message);
     var title = "";
     if (success) {
@@ -37,12 +42,13 @@ function finish (message, success) {
         width: 400,
         buttons: {
             "OK": function () {
+            	socket.emit('finish', message);
                 $(this).closest('.ui-dialog-content').dialog('close'); 
             }
         }
     });
 
-    socket.emit('finish', message);
+
 }
 
 function notify (str) {

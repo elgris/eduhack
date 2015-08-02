@@ -82,6 +82,7 @@ func initSocketIO() {
 			so.Emit("error", "no team_id provided")
 			return
 		}
+		teamIdFinish := teamId + "_finish"
 
 		playerNum, err := tryToJoin(&m, teamId)
 		if err != nil {
@@ -95,9 +96,8 @@ func initSocketIO() {
 		so.Emit("connected", strconv.Itoa(playerNum))
 
 		if playerNum == 2 {
-			mess := encodeMessage(game0())
-			so.Emit("start", mess)
-			so.BroadcastTo(teamId, "start", mess)
+			storage.Set(teamIdFinish, 0, cache.DefaultExpiration)
+			nextGame(teamId, so)
 		}
 
 		so.On("event", func(message string) {
@@ -107,6 +107,18 @@ func initSocketIO() {
 
 		so.On("finish", func(message string) {
 			log.Println("signalled message", message)
+			storage.Increment(teamIdFinish, 1)
+			if v, ok := storage.Get(teamIdFinish); ok {
+				if conv, converted := v.(int); converted {
+					if conv >= 2 {
+						nextGame(teamId, so)
+					}
+				} else {
+					nextGame(teamId, so)
+				}
+			} else {
+				nextGame(teamId, so)
+			}
 		})
 
 		so.On("disconnection", func() {
@@ -123,6 +135,33 @@ func initSocketIO() {
 	http.Handle("/socket.io/", sio)
 }
 
+func nextGame(teamId string, so socketio.Socket) {
+	next := 0
+	if val, ok := storage.Get(teamId + "_next"); ok {
+		if conv, converted := val.(int); converted {
+			next = conv
+		}
+	}
+
+	storage.Set(teamId+"_next", next+1, cache.DefaultExpiration)
+
+	var m Message
+	switch next {
+	case 0:
+		m = game0()
+	// case 1:
+	// 	m = game1()
+	default:
+		so.Emit("finish")
+		so.BroadcastTo(teamId, "finish")
+		return
+	}
+
+	mess := encodeMessage(m)
+	so.Emit("start", mess)
+	so.BroadcastTo(teamId, "start", mess)
+}
+
 func encodeMessage(m Message) []byte {
 	str, _ := json.Marshal(m)
 	return str
@@ -133,14 +172,17 @@ func game0() Message {
 	data := struct {
 		First  int
 		Second int
-		Main   int
+		Data   string
 	}{}
 
 	nums := []int{6, 8, 9}
 	shuffleInt(nums)
 	data.First = nums[0]
 	data.Second = nums[1]
-	data.Main = nums[2]
+
+	field := generateGame0Field(nums[2], nums[0], nums[1])
+	str, _ := json.Marshal(field)
+	data.Data = string(str)
 
 	content := parseTemplate(tmplt, "game_0", &data)
 	return Message{
@@ -148,7 +190,25 @@ func game0() Message {
 		Second:  "choose only numbers " + strconv.Itoa(data.Second),
 		Content: content,
 	}
+}
 
+func generateGame0Field(main, first, second int) [][]int {
+	res := make([][]int, 8)
+	for i := 0; i < 8; i++ {
+		res[i] = make([]int, 25)
+		for j := 0; j < 25; j++ {
+			rnd := rand.Intn(100)
+			if rnd < 10 {
+				res[i][j] = first
+			} else if rnd < 20 {
+				res[i][j] = second
+			} else {
+				res[i][j] = main
+			}
+		}
+	}
+
+	return res
 }
 
 func loadTemplates() {

@@ -38,3 +38,8 @@ body {
 .game0 ul {
   padding: 0;
 }
+
+.score {
+  font-size: 30pt;
+  text-align: center;
+}

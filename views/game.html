@@ -12,10 +12,8 @@
 <<end>>     
 <div class="container">
     <div class="row">
-      <div class="col-lg-6 col-centered">
-        <div class="alert alert-info" role="alert">
-          <p>TIMER</p>
-        </div>
+      <div class="col-lg-6 col-centered" style="width: 150px; margin: 0px auto">
+        <div id="countdown"></div>
       </div>
     </div>
 
@@ -39,8 +37,7 @@
 
     <div class="row">
       <div class="col-lg-6 col-centered">
-        <div class="alert alert-info" role="alert">
-          <p>TOTAL SCORE</p>
+        <div id="score" class="alert alert-info score" role="alert">
         </div>
       </div>
     </div>
@@ -52,6 +49,7 @@
 <script src="/static/lib/jquery/jquery.min.js"></script>
 <script src="/static/lib/jquery-ui/js/jquery-ui.min.js"></script>
 <script src="/static/scripts/games.js"></script>
+<script src="/static/scripts/jquery.countdown360.min.js"></script>
 
 <script type="text/javascript">
 var playerIndex = 0;
@@ -62,6 +60,20 @@ var $player1 = $('#player-1');
 var $player2 = $('#player-2');
 var $player1score = $('#player-1-score');
 var $player2score = $('#player-2-score');
+var $score = $('#score');
+
+var countdown = $("#countdown").countdown360({
+    radius: 60,
+    seconds: 20,
+    label: ['sec', 'secs'],
+    fontColor: '#FFFFFF',
+    autostart: true,
+    onComplete: function () {
+      finish('Time is over!', false);
+    }
+});
+
+countdown.stop();
 
 var socket;
 
@@ -94,6 +106,7 @@ $("#game-field").ready(function() {
         $elem.html("Task: " + $elem.html());
         
         $("#player-" + opponentIndex).html('');
+        countdown.start();
       });  
 
       socket.on('event', function (data) {
@@ -101,8 +114,12 @@ $("#game-field").ready(function() {
 
         var json = JSON.parse(data);
 
-        $player1score.html(json.score_player_1);
-        $player2score.html(json.score_player_2);
+        if (playerIndex == 1) {
+          setHtml($player2score, json.score_player_2);
+        } else {
+          setHtml($player1score, json.score_player_1);
+        }
+        
         eval(json.message)
       });  
 

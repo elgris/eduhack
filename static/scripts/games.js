@@ -5,16 +5,20 @@ var colors = [
 	"#8e44ad", 
 	"#c0392b"
 ];
-var numbers = [6,8,9];
 
-function game0(main, first, second) {
+var game0data = [];
+var game0remains = 0;
+
+function game0(first, second, game0data) {
 	if (playerIndex == 1) {
 		playerValue = first;
 	} else {
 		playerValue = second;
 	}
 
-	var lines = game0generator(8, 25, main, first, second);
+	var mainColor = getRandomFromArray(colors);
+
+	var lines = game0data;
 	var list = $('<ul>').addClass('game0');
 
 	$.each(lines, function(i) {
@@ -24,13 +28,16 @@ function game0(main, first, second) {
 	        .appendTo(list);
 	    var subList = $('<ul>').appendTo(li);
 
-	    numbers = lines[i]
+	    var numbers = lines[i]
 	    $.each(numbers, function(j) {
 	    	var num = numbers[j];
+	    	if (num == playerValue) {
+	    		game0remains++;
+	    	}
 	    	$('<li onclick="numClicked(' + i + ',' + j + ')"/>')	    		
-    			.attr('style', 'cursor: pointer; display: inline; color: ' + num.color)
+    			.attr('style', 'cursor: pointer; display: inline; color: ' + mainColor)
 	    		.addClass('no-list')
-	    		.text(num.val)
+	    		.text(num)
 	    		.appendTo(subList);
 	    });
 	});
@@ -38,12 +45,22 @@ function game0(main, first, second) {
 }
 
 function numClicked (line, col) {
+	if (game0remains <= 0) {
+		return;
+	}
 	hideNum(line, col)
 	var $elem = $('ul.game0 li:nth-child(' + (line+1) + ') ul li:nth-child(' + (col+1) + ')');
 
 	var val = parseInt($elem.html());
+	if (val == playerValue) {
+		game0remains--;
+	}
 	score(val == playerValue);
 	notify('hideNum(' + line + ',' + col + ')');
+
+	if (game0remains <= 0) {
+		finish('You have finished your part!', true);
+	}
 }
 
 function hideNum (line, col) {
@@ -56,10 +73,42 @@ function score (success) {
 	$elem = $('#player-' + playerIndex + '-score');
 	var val = parseInt($elem.html())
 	if (success) {
-		$elem.html(val + 1);
+		setHtml($elem, val + 1);
 	} else {
-		$elem.html(val - 1);
+		setHtml($elem, val - 1);
 	}
+}
+
+function setHtml ($elem, value) {
+  $elem.html(value)
+  var score1 = parseInt($player1score.html());
+  var score2 = parseInt($player2score.html());
+  $score.html(score1 + score2);
+}
+
+
+function finish (message, success) {
+    $("#dialog-confirm").html(message);
+    var title = "";
+    if (success) {
+        title = "Congratulations!";
+    } else {
+        title = "You failed :(";
+    }
+	$("#dialog-confirm").dialog({
+        resizable: false,
+        modal: true,
+        title: title,
+        height: 250,
+        width: 400,
+        buttons: {
+            "OK": function () {
+                $(this).closest('.ui-dialog-content').dialog('close'); 
+            }
+        }
+    });
+
+    socket.emit('finish', message);
 }
 
 function notify (str) {

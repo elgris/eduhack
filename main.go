@@ -152,6 +152,8 @@ func nextGame(teamId string, so socketio.Socket) {
 		m = game0()
 	case 1:
 		m = game1()
+	case 2:
+		m = game2()
 	default:
 		so.Emit("finish")
 		so.BroadcastTo(teamId, "finish")
@@ -166,6 +168,40 @@ func nextGame(teamId string, so socketio.Socket) {
 func encodeMessage(m Message) []byte {
 	str, _ := json.Marshal(m)
 	return str
+}
+
+func game2() Message {
+	data := struct {
+		First  int
+		Second int
+		Data   string
+		Invert bool
+	}{}
+
+	firstSide := "LEFT"
+	secondSide := "RIGHT"
+
+	if rand.Intn(10) < 5 {
+		data.Invert = true
+		firstSide = "RIGHT"
+		secondSide = "LEFT"
+	}
+
+	nums := []int{6, 8, 9}
+	shuffleInt(nums)
+	data.First = nums[0]
+	data.Second = nums[1]
+
+	field := generateGame0Field(nums[2], nums[0], nums[1])
+	str, _ := json.Marshal(field)
+	data.Data = string(str)
+
+	content := parseTemplate(tmplt, "game_2", &data)
+	return Message{
+		First:   fmt.Sprintf("choose only numbers %d on %s side of the field", data.First, firstSide),
+		Second:  fmt.Sprintf("choose only numbers %d on %s side of the field", data.Second, secondSide),
+		Content: content,
+	}
 }
 
 type colorDef struct {
@@ -263,8 +299,8 @@ func game0() Message {
 func generateGame0Field(main, first, second int) [][]int {
 	res := make([][]int, 8)
 	for i := 0; i < 8; i++ {
-		res[i] = make([]int, 25)
-		for j := 0; j < 25; j++ {
+		res[i] = make([]int, 24)
+		for j := 0; j < 24; j++ {
 			rnd := rand.Intn(100)
 			if rnd < 10 {
 				res[i][j] = first

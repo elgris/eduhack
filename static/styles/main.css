@@ -45,8 +45,16 @@ body {
   font-family: 'Helvetica Bold', Helvetica, Arial, sans-serif;
 }
 
+.game2 {
+  padding: 0;
+  text-align: center;
+  font-size: 28pt;
+  list-style: none;
+  font-family: 'Helvetica Bold', Helvetica, Arial, sans-serif;
+}
 .game ul {
   padding: 0;
+  list-style: none;
 }
 
 .score {
